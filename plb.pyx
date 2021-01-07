@@ -24,8 +24,8 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
 
     cdef int i, out_ix
 
-    cdef cnp.ndarray[cnp.double_t, ndim=1] ret, prev_ret
-    ret = book.get_tops(5)
+    cdef vector[double] ret = book.get_tops(5)
+    cdef vector[double] prev_ret
 
     out_ix = 0
     for i in range(len(_ts)):
@@ -36,7 +36,7 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
             
         # Only append if we dont already have this row
         if i == 0:
-            out_tops_view[out_ix] = ret
+            out_tops_view[out_ix] = np.asarray(ret)
             out_ts_view[out_ix] = _ts[i]
 
             prev_ret = ret
@@ -44,7 +44,7 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
         else:
             for x in range(y):
                 if ret[x] != prev_ret[x]:
-                    out_tops_view[out_ix] = ret
+                    out_tops_view[out_ix] = np.asarray(ret)
                     out_ts_view[out_ix] = _ts[i]
 
                     out_ix = out_ix + 1
