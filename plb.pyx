@@ -8,7 +8,7 @@ cimport cython
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def l2_walk(self, long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
+def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
     cdef Book *book = new Book()
    
     cdef Py_ssize_t alloc_len = len(_ts)*5*2*2
