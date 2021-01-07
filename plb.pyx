@@ -2,13 +2,14 @@
 
 from price_level_book cimport Book
 import numpy as np
-cimport numpy as np
+cimport numpy as cnp
 from cpython cimport array
 cimport cython
+from libcpp.vector cimport vector
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def l2_walk(self, long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
+def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
     cdef Book *book = new Book()
    
     cdef Py_ssize_t alloc_len = len(_ts)*5*2*2
@@ -22,8 +23,9 @@ def l2_walk(self, long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
     cdef long[:] out_ts_view = _out_ts
 
     cdef int i, out_ix
-    cdef double ret[5*2*2]
-    cdef double prev_ret[5*2*2]
+
+    cdef cnp.ndarray[cnp.double_t, ndim=1] ret, prev_ret
+    ret = book.get_tops(5)
 
     out_ix = 0
     for i in range(len(_ts)):
@@ -32,11 +34,9 @@ def l2_walk(self, long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
         else:
             book.add_ask(_price[i], _qty[i])
             
-        ret[:] = book.get_tops(5)
-
         # Only append if we dont already have this row
         if i == 0:
-            out_tops_view[out_ix,:] = ret 
+            out_tops_view[out_ix] = ret
             out_ts_view[out_ix] = _ts[i]
 
             prev_ret = ret
@@ -44,7 +44,7 @@ def l2_walk(self, long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
         else:
             for x in range(y):
                 if ret[x] != prev_ret[x]:
-                    out_tops_view[out_ix,:] = ret
+                    out_tops_view[out_ix] = ret
                     out_ts_view[out_ix] = _ts[i]
 
                     out_ix = out_ix + 1

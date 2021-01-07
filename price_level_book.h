@@ -2,6 +2,7 @@
 #define PRICELEVEL_H
 
 #include <set>
+#include <vector>
 using namespace std;
 
 class PriceLevel {
@@ -19,6 +20,6 @@ class Book {
 		void add_item(double price, double qty, set<PriceLevel> *side);
 		void add_ask(double price, double qty);
 		void add_bid(double price, double qty);
-		double *get_tops(int top_n);
+		vector<double> get_tops(int top_n);
 };
 #endif
