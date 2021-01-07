@@ -19,18 +19,19 @@ Book::Book() {
 };
 
 void Book::add_item(double price, double qty, set<PriceLevel> *side) {
-	std::set<PriceLevel>::iterator it = side->begin();
-	while (it != side->end()) {
-		if (it->price == price) {
+	PriceLevel in = PriceLevel(price, qty);
+
+	std::set<PriceLevel>::iterator it = side->find(in);
+	if (it != side->end()) {
+		if (qty == 0.0) {
 			side->erase(it);
-			break;
+		} else {
+			it->qty = qty;
 		}
-		it++;
+		return;
 	}
 
-	if (qty != 0.0) {
-		side->insert(PriceLevel(price, qty));
-	}
+	side->insert(in);
 }
 
 void Book::add_ask(double price, double qty) {
@@ -45,9 +46,9 @@ double *Book::get_tops(int top_n) {
 	int out_len = 2*2*top_n;
 	double *out = new double[out_len]();
 
-	std::set<PriceLevel>::iterator rit = this->bids->begin();
+	std::set<PriceLevel>::reverse_iterator rit = this->bids->rbegin();
 	for (int i=0;i<out_len/2;i+=2) {
-		if (rit != this->bids->end()) {
+		if (rit != this->bids->rend()) {
 			out[i] = rit->price;
 			out[i+1] = rit->qty;
 			rit++;

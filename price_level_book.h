@@ -6,7 +6,8 @@ using namespace std;
 
 class PriceLevel {
 	public:
-		double price, qty;
+		double price;
+		mutable double qty;
 		PriceLevel(double p, double q);
 		bool operator<(const PriceLevel& rhs) const;
 };
