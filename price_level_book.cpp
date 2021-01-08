@@ -13,9 +13,12 @@ bool PriceLevel::operator<(const PriceLevel& rhs) const
 	return price < rhs.price;
 }
 
-Book::Book() {
+Book::Book(int tops_n) {
 	this->bids = new set<PriceLevel>();
 	this->asks = new set<PriceLevel>();
+
+	this->tops_n = tops_n;
+	this->out = new double[this->tops_n*2*2]();
 };
 
 void Book::add_item(double price, double qty, set<PriceLevel> *side) {
@@ -42,15 +45,15 @@ void Book::add_bid(double price, double qty) {
 	add_item(price, qty, this->bids);
 }
 
-double *Book::get_tops(int top_n) {
-	int out_len = 2*2*top_n;
-	double *out = new double[out_len]();
+double *Book::get_tops() {
+	int out_len = this->tops_n*2*2;
+	memset(this->out, 0, out_len);
 
 	std::set<PriceLevel>::reverse_iterator rit = this->bids->rbegin();
 	for (int i=0;i<out_len/2;i+=2) {
 		if (rit != this->bids->rend()) {
-			out[i] = rit->price;
-			out[i+1] = rit->qty;
+			this->out[i] = rit->price;
+			this->out[i+1] = rit->qty;
 			rit++;
 		}
 	}
@@ -58,11 +61,11 @@ double *Book::get_tops(int top_n) {
 	std::set<PriceLevel>::iterator it = this->asks->begin();
 	for (int i=out_len/2;i < out_len;i+=2) {
 		if (it != this->asks->end()) {
-			out[i] = it->price;
-			out[i+1] = it->qty;
+			this->out[i] = it->price;
+			this->out[i+1] = it->qty;
 			it++;
 		}
 	}
 
-	return out;
+	return this->out;
 }
