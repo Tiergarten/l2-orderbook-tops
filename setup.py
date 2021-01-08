@@ -4,6 +4,9 @@ import numpy
 import Cython.Compiler.Options
 Cython.Compiler.Options.annotate = True
 
-setup(ext_modules = cythonize(
-           "plb.pyx"                 # our Cython source
-      ), include_dirs=[numpy.get_include()])
+setup(
+        ext_modules = cythonize("plb.pyx"), 
+        include_dirs=[numpy.get_include()], 
+        test_suite='nose.collector',
+        tests_require=['nose'],
+    )

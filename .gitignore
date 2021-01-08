@@ -2,3 +2,4 @@ build/
 *.so
 plb.cpp
 *.html
+__pycache__
