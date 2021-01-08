@@ -24,6 +24,7 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
 
     cdef int i, out_ix
 
+    # TODO: This return double* size information needs to be set dynamically
     cdef double ret[10*2*2]
     cdef double prev_ret[10*2*2]
 
@@ -36,10 +37,10 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
            
         ret[:] = book.get_tops()
 
-        # Only append if we dont already have this row
         if i == 0:
             out_tops_view[out_ix,:] = ret 
             out_ts_view[out_ix] = _ts[i]
+        # Only append if there is a change in tops(n)
         else:
             for x in range(y):
                 if ret[x] != prev_ret[x]:
@@ -55,4 +56,5 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
 
     ret_np = np.hstack((_out_ts.reshape((T,1)), _out_tops))
     ret_np = ret_np[~np.isnan(ret_np).any(axis=1)]
-    return ret_np            
+    return ret_np
+
