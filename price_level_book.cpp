@@ -1,5 +1,7 @@
 #include <iostream>
 #include <set>
+#include <cstdlib>
+
 #include "price_level_book.h"
 using namespace std;
 
@@ -28,7 +30,14 @@ Book::Book(int tops_n) {
 	this->out = new double[this->out_len()]();
 };
 
-void Book::update_qty(double qty, int _side) {
+void Book::update_qty(double price, double qty, int _side) {
+
+    double mid_price = this->asks->begin()->price - this->bids->begin()->price;
+
+    if (abs(price-mid_price) > 100) {
+        return;
+    }
+
     if (_side == 1) {
         this->bid_qty += qty;
     } else {
@@ -49,15 +58,15 @@ void Book::add_item(double price, double qty, int _side) {
 
 	if ((it = side->find(in)) == side->end()) {
 	    side->insert(in);
-        this->update_qty(in.qty, _side);
+        this->update_qty(price, in.qty, _side);
 	    return;
 	}
 
     if (qty == 0.0) {
-        this->update_qty(-(it->qty), _side);
+        this->update_qty(price, -(it->qty), _side);
         side->erase(it);
     } else {
-        this->update_qty((qty - (it->qty)), _side);
+        this->update_qty(price, (qty - (it->qty)), _side);
         it->qty = qty;
     }
 }
@@ -77,7 +86,7 @@ double *Book::get_tops() {
 	memset(this->out, 0, _out_len);
 
 	std::set<PriceLevel>::reverse_iterator rit = this->bids->rbegin();
-	for (i=0;i<_out_len/2;i+=2) {
+	for (i=0;i<this->tops_n*2;i+=2) {
 		if (rit != this->bids->rend()) {
 			this->out[i] = rit->price;
 			this->out[i+1] = rit->qty;
@@ -86,7 +95,7 @@ double *Book::get_tops() {
 	}
 
 	std::set<PriceLevel>::iterator it = this->asks->begin();
-	for (i=_out_len/2;i < _out_len;i+=2) {
+	for (;i < this->tops_n*2*2;i+=2) {
 		if (it != this->asks->end()) {
 			this->out[i] = it->price;
 			this->out[i+1] = it->qty;
