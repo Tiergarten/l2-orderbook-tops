@@ -3,20 +3,20 @@
 from price_level_book cimport Book
 import numpy as np
 cimport numpy as np
+import pandas as pd
 from cpython cimport array
 cimport cython
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
-    cdef int TOP_LEN = 10 
+def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty, int TOP_LEN=8):
     cdef Book *book = new Book(TOP_LEN)
-   
-    cdef Py_ssize_t alloc_len = len(_ts)*TOP_LEN*2*2
-    cdef Py_ssize_t T = len(_ts)
-    cdef Py_ssize_t y = TOP_LEN*2*2
+    cdef int row_sz = book.out_len()
 
-    _out_tops = np.full((T,y), np.nan, dtype=np.dtype('d'))
+    cdef Py_ssize_t T = len(_ts)
+
+    _out_tops = np.full((T,row_sz), np.nan, dtype=np.dtype('d'))
     cdef double[:,::1] out_tops_view = _out_tops
 
     _out_ts = np.full((T,), np.nan, dtype=np.dtype('long'))
@@ -25,11 +25,11 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
     cdef int i, out_ix
 
     # TODO: This return double* size information needs to be set dynamically
-    cdef double ret[10*2*2]
-    cdef double prev_ret[10*2*2]
+    cdef double ret[(8*2*2)+2]
+    cdef double prev_ret[(8*2*2)+2]
 
     out_ix = 0
-    for i in range(len(_ts)):
+    for i in range(T):
         if _side[i] == 1:
             book.add_bid(_price[i], _qty[i])
         else:
@@ -41,8 +41,9 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
             out_tops_view[out_ix,:] = ret 
             out_ts_view[out_ix] = _ts[i]
         # Only append if there is a change in tops(n)
+        # Do not include total_bid, total_ask in check as they'll always chance (hence -2)
         else:
-            for x in range(y):
+            for x in range(row_sz-2):
                 if ret[x] != prev_ret[x]:
                     out_tops_view[out_ix,:] = ret
                     out_ts_view[out_ix] = _ts[i]
@@ -54,7 +55,33 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty):
 
     del book
 
-    ret_np = np.hstack((_out_ts.reshape((T,1)), _out_tops))
+    _out_ts = _out_ts.reshape((T,1))
+    ret_np = np.hstack((_out_ts, _out_tops))
     ret_np = ret_np[~np.isnan(ret_np).any(axis=1)]
-    return ret_np
+
+    ret_df = pd.DataFrame(ret_np)
+    ret_df.columns = get_columns(TOP_LEN)
+
+    return ret_df
+
+
+def get_columns(tops_n=10):
+    cols = []
+    side = 'b'
+
+    num = 0
+    for i in range(tops_n*2):
+        if i == tops_n:
+            side ='a'
+            num = 0
+
+        cols.append('{}_{}'.format(side, num))
+        cols.append('{}q_{}'.format(side, num))
+
+        num = num + 1
+
+    cols.append('b_total')
+    cols.append('a_total')
+
+    return ['ts'] + cols
 

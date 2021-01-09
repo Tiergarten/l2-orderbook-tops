@@ -9,9 +9,8 @@ cdef extern from "price_level_book.h":
         PriceLevel(double p, double q) except +
 
     cdef cppclass Book:
-        set[PriceLevel] bids, asks
         Book(int tops_n) except +
-        void add_item(double price, double qty, set[PriceLevel] *side)
+        int out_len()
         void add_ask(double price, double qty)
         void add_bid(double price, double qty)
         double *get_tops()

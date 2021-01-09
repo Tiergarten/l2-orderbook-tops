@@ -15,10 +15,14 @@ class PriceLevel {
 class Book {
 	public:
 		set<PriceLevel> *bids, *asks;
+		double bid_qty, ask_qty;
 		double *out;
 		int tops_n;
+
 		Book(int tops_n);
-		void add_item(double price, double qty, set<PriceLevel> *side);
+		int out_len();
+		void update_qty(double qty, int _side);
+		void add_item(double price, double qty, int _side);
 		void add_ask(double price, double qty);
 		void add_bid(double price, double qty);
 		double *get_tops();

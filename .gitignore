@@ -3,3 +3,4 @@ build/
 plb.cpp
 *.html
 __pycache__
+.idea/
