@@ -65,7 +65,7 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty, int TO
     return ret_df
 
 
-def get_columns(tops_n=10):
+def get_columns(tops_n):
     cols = []
     side = 'b'
 
