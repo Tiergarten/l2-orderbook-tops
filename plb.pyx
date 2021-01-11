@@ -14,6 +14,8 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty, int TO
     cdef Book *book = new Book(TOP_LEN)
     cdef int row_sz = book.out_len()
 
+    # TODO: For large orderbooks we won't use the full len in output as we're only interested in tops
+    # Can I use a heuristic to allocate a fraction of the initial array and re-alloc if needed?
     cdef Py_ssize_t T = len(_ts)
 
     _out_tops = np.full((T,row_sz), np.nan, dtype=np.dtype('d'))
@@ -41,7 +43,7 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty, int TO
             out_tops_view[out_ix,:] = ret 
             out_ts_view[out_ix] = _ts[i]
         # Only append if there is a change in tops(n)
-        # Do not include total_bid, total_ask in check as they'll always chance (hence -2)
+        # Do not include total_bid, total_ask in check as they'll always change (hence -2)
         else:
             for x in range(row_sz-2):
                 if ret[x] != prev_ret[x]:
