@@ -8,6 +8,6 @@ See example.ipynb for usage.
 
 ## Technology
 
-Python, Cython, C++
+Python, Numpy, Cython, C++
 
 Makes use of libstdc::set to order L2 price levels on insertion for efficient querying.
