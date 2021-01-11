@@ -15,7 +15,6 @@ Makes use of libstdc::set to order L2 price levels on insertion for efficient qu
 ## Benchmarks
 
 The raw plb parser runs ~114x faster then the naive Python implementation on a sample of 100,000 L2 price level updates:
-
 ![alt text](docs/benchmarks.png)
 
 See [Benchmark Notebook](docs/benchmarks.ipynb) for details.
