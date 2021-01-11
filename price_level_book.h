@@ -21,10 +21,10 @@ class Book {
 
 		Book(int tops_n);
 		int out_len();
-		void update_qty(double price, double qty, int _side);
+		double get_resting_qty(int _side, int distance_from_mid);
 		void add_item(double price, double qty, int _side);
 		void add_ask(double price, double qty);
 		void add_bid(double price, double qty);
-		double *get_tops();
+		double *get_tops(int total_dollar_depth);
 };
 #endif

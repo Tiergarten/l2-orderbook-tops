@@ -10,7 +10,7 @@ cimport cython
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty, int TOP_LEN=8):
+def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty, int TOP_LEN=8, int total_dollar_depth=0):
     cdef Book *book = new Book(TOP_LEN)
     cdef int row_sz = book.out_len()
 
@@ -35,7 +35,7 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty, int TO
         else:
             book.add_ask(_price[i], _qty[i])
            
-        ret[:] = book.get_tops()
+        ret[:] = book.get_tops(total_dollar_depth)
 
         if i == 0:
             out_tops_view[out_ix,:] = ret 

@@ -21,29 +21,11 @@ int Book::out_len() {
 
 Book::Book(int tops_n) {
 	this->bids = new set<PriceLevel>();
-	this->bid_qty = 0.0;
-
 	this->asks = new set<PriceLevel>();
-	this->ask_qty = 0.0;
 
 	this->tops_n = tops_n;
 	this->out = new double[this->out_len()]();
 };
-
-void Book::update_qty(double price, double qty, int _side) {
-
-    double mid_price = this->asks->begin()->price - this->bids->begin()->price;
-
-    if (abs(price-mid_price) > 100) {
-        return;
-    }
-
-    if (_side == 1) {
-        this->bid_qty += qty;
-    } else {
-        this->ask_qty += qty;
-    }
-}
 
 void Book::add_item(double price, double qty, int _side) {
 	set<PriceLevel> *side;
@@ -58,15 +40,12 @@ void Book::add_item(double price, double qty, int _side) {
 
 	if ((it = side->find(in)) == side->end()) {
 	    side->insert(in);
-        this->update_qty(price, in.qty, _side);
 	    return;
 	}
 
     if (qty == 0.0) {
-        this->update_qty(price, -(it->qty), _side);
         side->erase(it);
     } else {
-        this->update_qty(price, (qty - (it->qty)), _side);
         it->qty = qty;
     }
 }
@@ -79,11 +58,56 @@ void Book::add_bid(double price, double qty) {
 	add_item(price, qty, 1);
 }
 
-double *Book::get_tops() {
+// TODO: refactor this 
+double Book::get_resting_qty(int _side, int distance_from_mid) {
+    double out = 0;
+    double start = 0;
+    set<PriceLevel> *side;
+
+    if (_side == 1) {
+        side = this->bids;
+    } else {
+        side = this->asks;
+    }
+
+    if (side->begin() == side->end()) {
+	    return 0;
+    }
+
+    if (_side == 0) {
+        // Increasing
+        std::set<PriceLevel>::iterator it = side->begin();
+        start = it->price;
+        while (it != side->end()) {
+            if (abs(it->price - start) > distance_from_mid) {
+                break;
+            }
+
+            out += it->qty;
+            it++;
+        }
+    } else {
+        // Decreasing
+        std::set<PriceLevel>::reverse_iterator rit = side->rbegin();
+        start = rit->price;
+        while (rit != side->rend()) {
+            if (abs(rit->price - start) > distance_from_mid) {
+                break;
+            }
+
+            out += rit->qty;
+            rit++;
+        }
+    }
+
+    return out;
+}
+
+double *Book::get_tops(int total_dollar_depth) {
     // top_n * 2 (price/qty) * 2 (bid/ask) + 2 (total_bid_qty, total_ask_qty)
     int i;
     int _out_len = this->out_len();
-	memset(this->out, 0, _out_len);
+    memset(this->out, 0, _out_len);
 
 	std::set<PriceLevel>::reverse_iterator rit = this->bids->rbegin();
 	for (i=0;i<this->tops_n*2;i+=2) {
@@ -103,8 +127,10 @@ double *Book::get_tops() {
 		}
 	}
 
-	this->out[_out_len-2] = this->bid_qty;
-	this->out[_out_len-1] = this->ask_qty;
+	if (total_dollar_depth > 0) {
+		this->out[_out_len-2] = this->get_resting_qty(1, total_dollar_depth);
+		this->out[_out_len-1] = this->get_resting_qty(0, total_dollar_depth);
+	}
 
 	return this->out;
 }
