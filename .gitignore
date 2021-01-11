@@ -4,3 +4,4 @@ plb.cpp
 *.html
 __pycache__
 .idea/
+.ipynb_checkpoints/

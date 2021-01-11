@@ -26,7 +26,7 @@ class Test(unittest.TestCase):
         df = pd.DataFrame(input_data) \
             .rename(columns={0: 'dt', 1: 'price', 2: 'qty', 3: 'side'})
 
-        ret = plb.l2_walk(df.dt.astype(int).values, df.side.astype(int).values, df.price.values, df.qty.values) \
+        ret = plb.l2_walk(df.dt.astype(int).values, df.side.astype(int).values, df.price.values, df.qty.values, total_dollar_depth=100) \
             .values
 
         self.assertEqual(ret.shape[0], len(input_data))
