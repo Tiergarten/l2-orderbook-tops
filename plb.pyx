@@ -8,9 +8,23 @@ from cpython cimport array
 cimport cython
 
 
+def set_types(df):
+    '''Pre-process input'''
+
+    df['timestamp'] = df['timestamp'].astype('uint64')
+
+    df['side'] = np.where(df['side'] == 'b', 1, 0)
+    df['side'] = df['side'].astype('uint32')
+
+    df['price'] = (df['price']*100).astype('uint32')
+    df['qty'] = (df['qty']*1000).astype('uint32')
+
+    return df
+
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty, int TOP_LEN=8, int total_dollar_depth=0):
+def l2_walk(unsigned long long[:] _ts, unsigned int[:] _side, unsigned int[:] _price, unsigned int[:] _qty, int TOP_LEN=8, int total_dollar_depth=0):
     cdef Book *book = new Book(TOP_LEN)
     cdef int row_sz = book.out_len()
 
@@ -18,17 +32,17 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty, int TO
     # Can I use a heuristic to allocate a fraction of the initial array and re-alloc if needed?
     cdef Py_ssize_t T = len(_ts)
 
-    _out_tops = np.full((T,row_sz), np.nan, dtype=np.dtype('d'))
-    cdef double[:,::1] out_tops_view = _out_tops
+    _out_tops = np.full((T,row_sz), 0, dtype=np.uint32)
+    cdef unsigned int[:,::1] out_tops_view = _out_tops
 
-    _out_ts = np.full((T,), np.nan, dtype=np.dtype('long'))
-    cdef long[:] out_ts_view = _out_ts
+    _out_ts = np.full((T,), 0, dtype=np.uint64)
+    cdef unsigned long[:] out_ts_view = _out_ts
 
     cdef int i, out_ix
 
-    # TODO: This return double* size information needs to be set dynamically
-    cdef double ret[(8*2*2)+2]
-    cdef double prev_ret[(8*2*2)+2]
+    # TODO: This array size information needs to be set dynamically
+    cdef unsigned int ret[(8*2*2)+2]
+    cdef unsigned int prev_ret[(8*2*2)+2]
 
     out_ix = 0
     for i in range(T):
@@ -58,13 +72,19 @@ def l2_walk(long[:] _ts, long[:] _side, double[:] _price, double[:] _qty, int TO
     del book
 
     _out_ts = _out_ts.reshape((T,1))
-    ret_np = np.hstack((_out_ts, _out_tops))
-    ret_np = ret_np[~np.isnan(ret_np).any(axis=1)]
+    return to_dataframe(_out_ts[_out_ts.any(axis=1)], _out_tops[_out_tops.any(axis=1)], TOP_LEN)
 
-    ret_df = pd.DataFrame(ret_np)
-    ret_df.columns = get_columns(TOP_LEN)
 
-    return ret_df
+def to_dataframe(ts, tops_data, tops_n):
+    ts_df = pd.DataFrame(ts, columns=['ts'])
+    data_df = pd.DataFrame(tops_data)
+    data_df.columns = get_columns(tops_n)
+
+    return pd.merge(ts_df, data_df, left_index=True, right_index=True)
+
+
+def get_tops(df, tops_n=8, total_dollar_depth=50):
+        return l2_walk(df['timestamp'].values, df['side'].values, df['price'].values, df['qty'].values)
 
 
 def get_columns(tops_n):
@@ -77,13 +97,15 @@ def get_columns(tops_n):
             side ='a'
             num = 0
 
-        cols.append('{}_{}'.format(side, num))
-        cols.append('{}q_{}'.format(side, num))
+        col_nm = '{}_{}'.format(side, num)
+        cols.append(col_nm)
+        
+        col_nm = '{}q_{}'.format(side, num)
+        cols.append(col_nm)
 
         num = num + 1
 
     cols.append('b_total')
     cols.append('a_total')
 
-    return ['ts'] + cols
-
+    return cols
