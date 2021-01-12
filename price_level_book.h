@@ -6,25 +6,25 @@ using namespace std;
 
 class PriceLevel {
 	public:
-		double price;
-		mutable double qty;
-		PriceLevel(double p, double q);
+		unsigned int price;
+		mutable unsigned int qty;
+		PriceLevel(unsigned int p, unsigned int q);
 		bool operator<(const PriceLevel& rhs) const;
 };
 
 class Book {
 	public:
 		set<PriceLevel> *bids, *asks;
-		double bid_qty, ask_qty;
-		double *out;
+		unsigned int bid_qty, ask_qty;
+		unsigned int *out;
 		int tops_n;
 
 		Book(int tops_n);
 		int out_len();
-		double get_resting_qty(int _side, int distance_from_mid);
-		void add_item(double price, double qty, int _side);
-		void add_ask(double price, double qty);
-		void add_bid(double price, double qty);
-		double *get_tops(int total_dollar_depth);
+		unsigned int get_resting_qty(unsigned int _side, unsigned int distance_from_mid);
+		void add_item(unsigned int price, unsigned int qty, int _side);
+		void add_ask(unsigned int price, unsigned int qty);
+		void add_bid(unsigned int price, unsigned int qty);
+		unsigned int *get_tops(unsigned int total_dollar_depth);
 };
 #endif

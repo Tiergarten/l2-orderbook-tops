@@ -5,7 +5,7 @@
 #include "price_level_book.h"
 using namespace std;
 
-PriceLevel::PriceLevel(double p, double q) {
+PriceLevel::PriceLevel(unsigned int p, unsigned int q) {
 	this->price = p;
 	this->qty = q;
 }
@@ -16,6 +16,7 @@ bool PriceLevel::operator<(const PriceLevel& rhs) const
 }
 
 int Book::out_len() {
+    // tops_n * price/qty * bid/ask + total_bid/total_ask
     return (this->tops_n*2*2)+2;
 }
 
@@ -24,10 +25,10 @@ Book::Book(int tops_n) {
 	this->asks = new set<PriceLevel>();
 
 	this->tops_n = tops_n;
-	this->out = new double[this->out_len()]();
+	this->out = new unsigned int[this->out_len()]();
 };
 
-void Book::add_item(double price, double qty, int _side) {
+void Book::add_item(unsigned int price, unsigned int qty, int _side) {
 	set<PriceLevel> *side;
 	set<PriceLevel>::iterator it;
 	PriceLevel in = PriceLevel(price, qty);
@@ -50,18 +51,18 @@ void Book::add_item(double price, double qty, int _side) {
     }
 }
 
-void Book::add_ask(double price, double qty) {
+void Book::add_ask(unsigned int price, unsigned int qty) {
 	add_item(price, qty, 0);
 }
 
-void Book::add_bid(double price, double qty) {
+void Book::add_bid(unsigned int price, unsigned int qty) {
 	add_item(price, qty, 1);
 }
 
 // TODO: refactor this 
-double Book::get_resting_qty(int _side, int distance_from_mid) {
-    double out = 0;
-    double start = 0;
+unsigned int Book::get_resting_qty(unsigned int _side, unsigned int distance_from_mid) {
+    unsigned int out = 0;
+    unsigned int start = 0;
     set<PriceLevel> *side;
 
     if (_side == 1) {
@@ -78,32 +79,37 @@ double Book::get_resting_qty(int _side, int distance_from_mid) {
         // Increasing
         std::set<PriceLevel>::iterator it = side->begin();
         start = it->price;
+	
         while (it != side->end()) {
-            if (abs(it->price - start) > distance_from_mid) {
+            if ((it->price - start) > distance_from_mid) {
                 break;
             }
 
             out += it->qty;
             it++;
         }
+
+
     } else {
         // Decreasing
         std::set<PriceLevel>::reverse_iterator rit = side->rbegin();
         start = rit->price;
+
         while (rit != side->rend()) {
-            if (abs(rit->price - start) > distance_from_mid) {
+            if ((start - rit->price) > distance_from_mid) {
                 break;
             }
 
             out += rit->qty;
             rit++;
         }
+
     }
 
     return out;
 }
 
-double *Book::get_tops(int total_dollar_depth) {
+unsigned int *Book::get_tops(unsigned int total_dollar_depth) {
     // top_n * 2 (price/qty) * 2 (bid/ask) + 2 (total_bid_qty, total_ask_qty)
     int i;
     int _out_len = this->out_len();
