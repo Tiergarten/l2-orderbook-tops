@@ -1,10 +1,21 @@
-from distutils.core import setup
-from Cython.Build import cythonize
-import numpy
+import numpy as np
+from setuptools import setup, Extension
+import Cython.Build
+
 import Cython.Compiler.Options
 Cython.Compiler.Options.annotate = True
 
 setup(
-        ext_modules = cythonize("plb.pyx"), 
-        include_dirs=[numpy.get_include()], 
-    )
+    name='l2_orderbook_tops',
+    cmdclass={'build_ext': Cython.Build.build_ext},
+    package_dir={'l2_orderbook_tops': 'l2_orderbook_tops'},
+    packages=['l2_orderbook_tops'],
+    ext_modules=[Extension(
+        'l2_orderbook_tops.extension',
+        sources=['l2_orderbook_tops/plb.pyx'],
+        language='c++',
+        include_dirs=[np.get_include()],
+    )],
+    test_suite='tests',
+    zip_safe=False
+)

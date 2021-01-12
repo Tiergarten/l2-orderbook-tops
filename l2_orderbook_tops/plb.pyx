@@ -76,6 +76,8 @@ def l2_walk(unsigned long long[:] _ts, unsigned int[:] _side, unsigned int[:] _p
 
 
 def to_dataframe(ts, tops_data, tops_n):
+    '''ts (64bit) and tops (32bit) has to be built into seperate dataframes and
+    joined to avoid everything being upcasted to 64bit'''
     ts_df = pd.DataFrame(ts, columns=['ts'])
     data_df = pd.DataFrame(tops_data)
     data_df.columns = get_columns(tops_n)
