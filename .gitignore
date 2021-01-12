@@ -1,9 +1,12 @@
 build/
 *.so
-plb.cpp
+l2_orderbook_tops/plb.c
+l2_orderbook_tops/plb.cpp
 *.html
 __pycache__
 .idea/
 .ipynb_checkpoints/
 *.dat
 *.parquet
+dist/
+*.egg-info/
