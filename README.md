@@ -10,7 +10,11 @@ See [Example Usage Notebook](docs/example_usage.ipynb) for usage.
 
 Python, Numpy, Cython, C++
 
-Makes use of libstdc::set to order L2 price levels on insertion for efficient querying.
+## Design decisions
+
+Makes use of libstdc++::set to order L2 price levels on insertion for efficient querying (red-black trees).
+
+Prices and order sizes are stored as unsigned integers for efficient storage in memory. The maximum value is 4,294,967,295 which means the maximum value of an order price in this implementation is $42,949,672.95 (*100) and the maximum value for an order size is 4,294,967.295 (*1000). 
 
 ## Benchmarks
 
