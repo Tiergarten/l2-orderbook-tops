@@ -10,3 +10,4 @@ __pycache__
 *.parquet
 dist/
 *.egg-info/
+l2_orderbook_tops/py_price_level_book.cpp

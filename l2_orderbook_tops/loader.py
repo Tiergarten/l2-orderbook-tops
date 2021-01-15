@@ -1,6 +1,22 @@
 import os
 import pandas as pd
-from l2_orderbook_tops import plb
+import numpy as np
+from l2_orderbook_tops import l2_orderbook_tops
+
+
+def set_types(df):
+    '''Pre-process input, convert decimals to unsigned ints'''
+
+    df['timestamp'] = df['timestamp'].astype('uint64')
+
+    df['side'] = np.where(df['side'] == 'b', 1, 0)
+    df['side'] = df['side'].astype('uint32')
+
+    df['price'] = (df['price']*100).astype('uint32')
+    df['qty'] = (df['qty']*1000).astype('uint32')
+
+    return df
+
 
 def get_binance_orderbook_snap_delta(input_dir, dt):
     '''Load Binance L2 orderbook snapshot and delta files'''
@@ -19,8 +35,8 @@ def get_binance_tops(input_dir, input_date):
     snap, delta = get_binance_orderbook_snap_delta(input_dir, input_date)
     df = pd.concat([snap, delta])
 
-    df = plb.set_types(df)
-    tops = plb.get_tops(df)
+    df = set_types(df)
+    tops = l2_orderbook_tops.get_tops(df)
     
     return tops.iloc[snap.shape[0]:]
 
