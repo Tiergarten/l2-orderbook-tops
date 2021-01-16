@@ -17,6 +17,5 @@ setup(
         language='c++',
         include_dirs=[np.get_include()],
     )],
-    test_suite='tests',
     zip_safe=False
 )
