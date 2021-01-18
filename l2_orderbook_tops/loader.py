@@ -30,13 +30,13 @@ def get_binance_orderbook_snap_delta(input_dir, dt):
     return pd.read_csv(snap_fn, usecols=needed_cols), pd.read_csv(update_fn, usecols=needed_cols)
 
 
-def get_binance_tops(input_dir, input_date):
+def get_binance_tops(input_dir, input_date, watch_dollar_dist_depth=25):
     '''Get tops from binance orderbook data and skip over the start-of-day snapshot data'''
     snap, delta = get_binance_orderbook_snap_delta(input_dir, input_date)
     df = pd.concat([snap, delta])
 
     df = set_types(df)
-    tops = l2_orderbook_tops.get_tops(df)
+    tops = l2_orderbook_tops.get_tops(df, watch_dollar_dist_depth=watch_dollar_dist_depth)
     
     return tops.iloc[snap.shape[0]:]
 

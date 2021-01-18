@@ -1,7 +1,9 @@
 from l2_orderbook_tops import py_price_level_book
 import pandas as pd
+import logging
 
 def get_tops(df, tops_len=8, watch_dollar_dist_depth=50):
+    logging.info('Calculating top({}, watch_depth={})'.format(tops_len, watch_dollar_dist_depth))
     ts, tops = py_price_level_book.l2_walk(df['timestamp'].values, df['side'].values, df['price'].values, 
             df['qty'].values, tops_len, watch_dollar_dist_depth)
 
