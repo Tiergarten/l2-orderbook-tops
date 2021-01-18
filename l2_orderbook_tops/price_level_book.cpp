@@ -16,7 +16,7 @@ bool PriceLevel::operator<(const PriceLevel& rhs) const
 }
 
 int Book::out_len() {
-    // tops_n * price/qty * bid/ask + total_bid/total_ask
+    // top_n * 2 (price/qty) * 2 (bid/ask) + 2 (total_bid_qty, total_ask_qty)
     return (this->tops_n*2*2)+2;
 }
 
@@ -110,7 +110,6 @@ unsigned int Book::get_resting_qty(unsigned int _side, unsigned int distance_fro
 }
 
 unsigned int *Book::get_tops(unsigned int total_dollar_depth) {
-    // top_n * 2 (price/qty) * 2 (bid/ask) + 2 (total_bid_qty, total_ask_qty)
     int i;
     int _out_len = this->out_len();
     memset(this->out, 0, _out_len);
