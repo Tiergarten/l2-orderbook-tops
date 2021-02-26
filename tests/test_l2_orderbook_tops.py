@@ -4,71 +4,11 @@ import unittest
 import pandas as pd
 import numpy as np
 from numpy.testing import assert_array_equal
+
+from helper import *
 from l2_orderbook_tops import l2_orderbook_tops
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
-
-
-def pre_process_input(input_data):
-    """
-    Turn input data into a dataframe with the correct column names
-    Scale & convert price and qtys into unsigned ints
-    """
-    df = pd.DataFrame(input_data) \
-        .rename(columns={0: 'dt', 1: 'price', 2: 'qty', 3: 'side'})
-
-    df['timestamp'] = (df['dt'].astype(np.int64) / int(1e6)).astype(np.uint64)
-    df['side'] = df['side'].astype('uint32')
-    df['price'] = (df['price'] * 100).astype('uint32')
-    df['qty'] = (df['qty'] * 1000).astype('uint32')
-
-    return df
-
-
-def assert_tops_output_equal(output, expected_ts, expected_bids, expected_asks):
-    # TODO: If input len doesn't match top N then pad with zeros
-    expected_bids = np.array(expected_bids)
-    expected_asks = np.array(expected_asks)
-
-    expected_bid_sz = np.array([sum(expected_bids[1::2])])
-    expected_ask_sz = np.array([sum(expected_asks[1::2])])
-
-    assert_array_equal(output[0], expected_ts, 'timestamps do not match')
-    assert_array_equal(output[1:17], expected_bids, 'bids do not match')
-    assert_array_equal(output[17:-2], expected_asks, 'asks do not match')
-    assert_array_equal(output[-2], expected_bid_sz, 'total bid watch size does not match')
-    assert_array_equal(output[-1], expected_ask_sz, 'total ask watch size does not match')
-
-
-class TestWatch(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super(TestWatch, self).__init__(*args, **kwargs)
-
-    def test_bid_watch(self):
-        input_data = (
-            (pd.Timestamp('2019-01-01 00:15:54'), 100.00, 0.01, 1),
-            (pd.Timestamp('2019-01-01 00:16:54'), 50.05, 0.02, 1),
-            (pd.Timestamp('2019-01-01 00:16:54'), 45.05, 0.02, 1)
-        )
-
-        df = pre_process_input(input_data)
-        ret = l2_orderbook_tops.get_tops(df, watch_dollar_dist_depth=5000).values
-
-        final_iteration = ret[-1]
-        self.assertEqual(final_iteration[-2], 30)
-
-    def test_ask_watch(self):
-        input_data = (
-            (pd.Timestamp('2019-01-01 00:15:54'), 100.00, 0.01, 0),
-            (pd.Timestamp('2019-01-01 00:16:54'), 149.00, 0.02, 0),
-            (pd.Timestamp('2019-01-01 00:16:54'), 151.00, 0.02, 0)
-        )
-
-        df = pre_process_input(input_data)
-        ret = l2_orderbook_tops.get_tops(df, watch_dollar_dist_depth=5000).values
-
-        final_iteration = ret[-1]
-        self.assertEqual(final_iteration[-1], 30)
 
 
 class Test(unittest.TestCase):
@@ -119,12 +59,12 @@ class Test(unittest.TestCase):
 
             (pd.Timestamp('2019-01-01 00:18:54'), 100.14, 0.03, 0),  # 1
             (pd.Timestamp('2019-01-01 00:19:54'), 100.15, 0.02, 0),  # 2
-            (pd.Timestamp('2019-01-01 01:19:54'), 100.16, 0.04, 0),  # 3
-            (pd.Timestamp('2019-01-01 01:19:54'), 100.17, 0.04, 0),  # 4
-            (pd.Timestamp('2019-01-01 01:19:54'), 100.18, 0.04, 0),  # 5
-            (pd.Timestamp('2019-01-01 01:19:54'), 100.19, 0.04, 0),  # 6
-            (pd.Timestamp('2019-01-01 01:19:54'), 100.20, 0.04, 0),  # 7
-            (pd.Timestamp('2019-01-01 01:19:54'), 100.21, 0.04, 0),  # 8
+            (pd.Timestamp('2019-01-01 01:19:55'), 100.16, 0.04, 0),  # 3
+            (pd.Timestamp('2019-01-01 01:19:56'), 100.17, 0.04, 0),  # 4
+            (pd.Timestamp('2019-01-01 01:19:57'), 100.18, 0.04, 0),  # 5
+            (pd.Timestamp('2019-01-01 01:19:58'), 100.19, 0.04, 0),  # 6
+            (pd.Timestamp('2019-01-01 01:19:59'), 100.20, 0.04, 0),  # 7
+            (pd.Timestamp('2019-01-01 01:20:00'), 100.21, 0.04, 0),  # 8
         )
 
         df = pre_process_input(input_data)
