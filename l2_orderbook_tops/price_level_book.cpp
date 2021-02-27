@@ -40,7 +40,9 @@ void Book::add_item(unsigned int price, unsigned int qty, int _side) {
     }
 
 	if ((it = side->find(in)) == side->end()) {
-	    side->insert(in);
+		if (qty != 0) {
+		    side->insert(in);
+		}
 	    return;
 	}
 
