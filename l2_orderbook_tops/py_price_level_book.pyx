@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+import logging
 
 from cpython cimport array
 cimport cython
@@ -9,6 +10,12 @@ cimport numpy as np
 
 from price_level_book cimport Book
 
+cdef int array_cmp(unsigned int *left, unsigned int *right, unsigned int size):
+    for i in range(size):
+        if left[i] != right[i]:
+            return 1
+
+    return 0
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -28,39 +35,42 @@ def l2_walk(unsigned long long[:] _ts, unsigned int[:] _side, unsigned int[:] _p
     _out_ts = np.full((T,), 0, dtype=np.uint64)
     cdef unsigned long[:] out_ts_view = _out_ts
 
-    cdef int i, out_ix
+    cdef unsigned int i, out_ix
 
     # TODO: This array size information needs to be set dynamically
     cdef unsigned int ret[(8*2*2)+2]
     cdef unsigned int prev_ret[(8*2*2)+2]
 
     out_ix = 0
-    for i in range(T):
-        if _side[i] == 1:
-            book.add_bid(_price[i], _qty[i])
-        else:
-            book.add_ask(_price[i], _qty[i])
-           
+    i = 0
+    while i < T:
+        # Updates from the same timestamp should be applied in bulk
+        while True:
+            if _side[i] == 1:
+                book.add_bid(_price[i], _qty[i])
+            else:
+                book.add_ask(_price[i], _qty[i])
+
+            if _ts[i+1] ==  _ts[i]:
+                i = i + 1
+            else:
+                break
+
         ret[:] = book.get_tops(watch_dollar_dist_depth)
 
-        if i == 0:
+        # Only append row if TOPS change (or initial row)
+        if out_ix == 0 or array_cmp(ret, prev_ret, row_sz-2) != 0:
             out_tops_view[out_ix,:] = ret 
             out_ts_view[out_ix] = _ts[i]
-        # Only append if there is a change in tops(n)
-        # Do not include total_bid, total_ask in check as they'll always change (hence -2)
-        else:
-            for x in range(row_sz-2):
-                if ret[x] != prev_ret[x]:
-                    out_tops_view[out_ix,:] = ret
-                    out_ts_view[out_ix] = _ts[i]
-                    break
 
+            prev_ret = ret
+            out_ix = out_ix + 1
 
-        prev_ret = ret
-        out_ix = out_ix + 1
+        i = i + 1
 
     del book
 
+    logging.info(f'Wrote {out_ix} rows')
+
     _out_ts = _out_ts.reshape((T,1))
     return _out_ts[_out_ts.any(axis=1)], _out_tops[_out_tops.any(axis=1)]
-

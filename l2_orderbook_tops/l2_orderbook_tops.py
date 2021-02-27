@@ -5,16 +5,18 @@ import logging
 
 def get_tops(df, tops_len=8, watch_dollar_dist_depth=50):
     logging.info('Calculating top({}, watch_depth={})'.format(tops_len, watch_dollar_dist_depth))
-    ts, tops = py_price_level_book.l2_walk(df['timestamp'].values, df['side'].values, df['price'].values, 
-            df['qty'].values, tops_len, watch_dollar_dist_depth)
+    ts, tops = py_price_level_book.l2_walk(df['timestamp'].values, df['side'].values, df['price'].values,
+                                           df['qty'].values, tops_len, watch_dollar_dist_depth)
 
     df = to_dataframe(ts, tops, tops_len)
     return df
 
 
 def to_dataframe(ts, tops_data, tops_n):
-    '''ts (64bit) and tops (32bit) has to be built into seperate dataframes and
-    joined to avoid everything being upcasted to 64bit'''
+    """
+    ts (64bit) and tops (32bit) has to be built into seperate dataframes and
+    joined to avoid everything being upcasted to 64bit
+    """
     ts_df = pd.DataFrame(ts, columns=['ts'])
     data_df = pd.DataFrame(tops_data)
     
