@@ -50,7 +50,7 @@ void Book::add_item(unsigned int price, unsigned int qty, int _side)
 	return;
     }
 
-    if (qty == 0.0) {
+    if (qty == 0) {
 	side->erase(it);
     } else {
 	it->qty = qty;
@@ -123,7 +123,7 @@ unsigned int *Book::get_tops(unsigned int total_dollar_depth)
 {
     int i;
     int _out_len = this->out_len();
-    memset(this->out, 0, _out_len);
+    memset(this->out, 0, _out_len*sizeof(unsigned int));
 
     std::set < PriceLevel >::reverse_iterator rit = this->bids->rbegin();
     for (i = 0; i < this->tops_n * 2; i += 2) {

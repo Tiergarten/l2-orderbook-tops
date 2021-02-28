@@ -21,7 +21,7 @@ def pre_process_input(input_data):
 
 
 def assert_tops_output_equal(output, expected_ts=None, expected_bids_in=None, expected_asks_in=None,
-                             side_struct_size=(8*2)+1):
+                             side_struct_size=8*2):
     # TODO: If input len doesn't match top N then pad with zeros
 
     if expected_ts is not None:
@@ -31,12 +31,18 @@ def assert_tops_output_equal(output, expected_ts=None, expected_bids_in=None, ex
         expected_bids_in = np.array(expected_bids_in)
         expected_bid_sz = np.array([sum(expected_bids_in[1::2])])
 
-        assert_array_equal(output[1:17], expected_bids_in, 'bids do not match')
+        expected_bids_padded = np.zeros(side_struct_size)
+        expected_bids_padded[:expected_bids_in.shape[0]] = expected_bids_in
+
+        assert_array_equal(output[1:17], expected_bids_padded, 'bids do not match')
         assert_array_equal(output[-2], expected_bid_sz, 'total bid watch size does not match')
 
     if expected_asks_in is not None:
         expected_asks_in = np.array(expected_asks_in)
         expected_ask_sz = np.array([sum(expected_asks_in[1::2])])
 
-        assert_array_equal(output[17:-2], expected_asks_in, 'asks do not match')
+        expected_asks_padded = np.zeros(side_struct_size)
+        expected_asks_padded[:expected_asks_in.shape[0]] = expected_asks_in
+
+        assert_array_equal(output[17:-2], expected_asks_padded, 'asks do not match')
         assert_array_equal(output[-1], expected_ask_sz, 'total ask watch size does not match')

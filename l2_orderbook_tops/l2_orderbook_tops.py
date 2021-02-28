@@ -27,7 +27,7 @@ def to_dataframe(ts, tops_data, tops_n):
 
 def get_columns(tops_n):
     col_pairs = [('b_'+str(n), 'bq_'+str(n)) for n in range(tops_n)]
-    col_pairs +=  [('a_'+str(n), 'aq_'+str(n)) for n in range(tops_n)]
+    col_pairs += [('a_'+str(n), 'aq_'+str(n)) for n in range(tops_n)]
 
     flattened_cols = [item for sublist in col_pairs for item in sublist]
     return flattened_cols + ['b_total', 'a_total']

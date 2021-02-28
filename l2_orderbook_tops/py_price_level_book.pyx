@@ -45,6 +45,7 @@ def l2_walk(unsigned long long[:] _ts, unsigned int[:] _side, unsigned int[:] _p
     i = 0
     while i < T:
         # Updates from the same timestamp should be applied in bulk
+        # before writing an output row
         while True:
             if _side[i] == 1:
                 book.add_bid(_price[i], _qty[i])
@@ -57,11 +58,13 @@ def l2_walk(unsigned long long[:] _ts, unsigned int[:] _side, unsigned int[:] _p
                 break
 
         ret[:] = book.get_tops(watch_dollar_dist_depth)
+        #print('raw: ' + str(ret))
 
         # Only append row if TOPS change (or initial row)
         if out_ix == 0 or array_cmp(ret, prev_ret, row_sz-2) != 0:
             out_tops_view[out_ix,:] = ret 
             out_ts_view[out_ix] = _ts[i]
+            #print('adding: ' + str(ret))
 
             prev_ret = ret
             out_ix = out_ix + 1
@@ -73,4 +76,4 @@ def l2_walk(unsigned long long[:] _ts, unsigned int[:] _side, unsigned int[:] _p
     logging.info(f'Wrote {out_ix} rows')
 
     _out_ts = _out_ts.reshape((T,1))
-    return _out_ts[_out_ts.any(axis=1)], _out_tops[_out_tops.any(axis=1)]
+    return _out_ts[:out_ix], _out_tops[:out_ix]
