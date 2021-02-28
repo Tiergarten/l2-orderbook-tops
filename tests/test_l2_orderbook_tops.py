@@ -15,40 +15,11 @@ class Test(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(Test, self).__init__(*args, **kwargs)
 
-    def test_bids(self):
-        input_data = (
-            (pd.Timestamp('2019-01-01 00:15:54'), 100.00, 0.01, 1),
-            (pd.Timestamp('2019-01-01 00:16:54'), 100.05, 0.02, 1)
-        )
-        df = pre_process_input(input_data)
-        ret = l2_orderbook_tops.get_tops(df, watch_dollar_dist_depth=100).values
-
-        self.assertEqual(ret.shape[0], df.shape[0])
-        col_sz = ret.shape[1]
-
-        # First iteration
-        #self.assertEqual(ret[0][0], df.dt.astype(np.int64).values[0])
-        self.assertEqual(ret[0][1], 10000)
-        self.assertEqual(ret[0][2], 10)
-        np.testing.assert_array_equal(ret[0][3:col_sz-2], np.zeros(ret.shape[1]-3-2))
-        self.assertEqual(ret[0][-2], 10)
-        self.assertEqual(ret[0][-1], 0)
-
-        # Second iteration
-        #self.assertEqual(ret[1][0], df.dt.astype(np.int64).values[1])
-        self.assertEqual(ret[1][1], 10005)
-        self.assertEqual(ret[1][2], 20)
-        self.assertEqual(ret[1][3], 10000)
-        self.assertEqual(ret[1][4], 10)
-        assert_array_equal(ret[1][5:col_sz - 2], np.zeros(ret.shape[1] - 5 - 2))
-        self.assertEqual(ret[1][-2], 30)
-        self.assertEqual(ret[1][-1], 0)
-
     def test_bid_asks(self):
         input_data = (
             (pd.Timestamp('2019-01-01 00:15:54'), 100.00, 0.01, 1),  # 8
-            (pd.Timestamp('2019-01-01 00:16:54'), 100.05, 0.02, 1),
-            (pd.Timestamp('2019-01-01 00:16.55'), 100.05, 0.00, 1),
+            (pd.Timestamp('2019-01-01 00:16:54'), 100.05, 0.02, 1),  # set
+            (pd.Timestamp('2019-01-01 00:16.55'), 100.05, 0.00, 1),  # delete
             (pd.Timestamp('2019-01-01 00:17:54'), 100.06, 0.03, 1),  # 7
             (pd.Timestamp('2019-01-01 00:18:54'), 100.07, 0.03, 1),  # 6
             (pd.Timestamp('2019-01-01 00:19:54'), 100.08, 0.03, 1),  # 5
@@ -82,6 +53,42 @@ class Test(unittest.TestCase):
                          10019, 40, 10020, 40, 10021, 40]
 
         assert_tops_output_equal(final_iteration, expected_ts, expected_bids, expected_asks)
+
+    def test_no_zero_sizes(self):
+        input_data = (
+            (pd.Timestamp('2019-01-01 00:15:54'), 100.00, 0.00, 1)
+            , (pd.Timestamp('2019-01-01 00:16:54'), 100.05, 0.02, 1)
+            , (pd.Timestamp('2019-01-01 00:17:54'), 100.05, 0.00, 1)
+
+            , (pd.Timestamp('2019-01-01 00:18:54'), 101.00, 0.00, 0)
+            , (pd.Timestamp('2019-01-01 00:19:54'), 101.05, 0.02, 0)
+            , (pd.Timestamp('2019-01-01 00:20:54'), 101.05, 0.00, 0)
+        )
+
+        df = pre_process_input(input_data)
+        print(df)
+        ret = l2_orderbook_tops.get_tops(df, watch_dollar_dist_depth=100).values
+        print(ret.shape)
+        print(ret)
+
+        assert ret.shape[0] == 5
+
+        first_iteration = ret[0]
+        assert_array_equal(first_iteration[1:], np.zeros(len(first_iteration)-1))
+
+        second_iteration = ret[1]
+        assert_tops_output_equal(second_iteration, expected_bids_in=[10005, 20], expected_asks_in=[])
+
+        third_iteration = ret[2]
+        assert_tops_output_equal(third_iteration, expected_bids_in=[], expected_asks_in=[])
+
+        forth_iteration = ret[3]
+        assert_tops_output_equal(forth_iteration, expected_bids_in=[], expected_asks_in=[10105, 20])
+
+        fifth_iteration = ret[4]
+        assert_tops_output_equal(fifth_iteration, expected_bids_in=[], expected_asks_in=[])
+
+
 
 
 if __name__ == '__main__':
