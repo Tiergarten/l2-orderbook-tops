@@ -1,4 +1,6 @@
 # l2-orderbook-tops
+[![codecov](https://codecov.io/gh/Tiergarten/l2-orderbook-tops/branch/master/graph/badge.svg?token=MPPY9Z65PA)](https://codecov.io/gh/Tiergarten/l2-orderbook-tops)
+
 
 Extract TOPS (top N best bid & best ask prices and sizes) from L2 orderbook data. 
 
