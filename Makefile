@@ -2,6 +2,8 @@ all: clean
 	pip uninstall l2-orderbook-tops -y
 	python setup.py install
 
+	cd docs && make clean html && cd -
+
 	# TODO: pytest behaves differently based on what directory its run from
 	cd tests && pytest -s && cd -
 
