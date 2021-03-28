@@ -1,6 +1,6 @@
 # l2-orderbook-tops
-[![codecov](https://codecov.io/gh/Tiergarten/l2-orderbook-tops/branch/master/graph/badge.svg?token=MPPY9Z65PA)](https://codecov.io/gh/Tiergarten/l2-orderbook-tops)
 
+![build](https://github.com/Tiergarten/l2-orderbook-tops/actions/workflows/python-package.yml/badge.svg) [![codecov](https://codecov.io/gh/Tiergarten/l2-orderbook-tops/branch/master/graph/badge.svg?token=MPPY9Z65PA)](https://codecov.io/gh/Tiergarten/l2-orderbook-tops) [![readthedocs](https://readthedocs.org/projects/l2-orderbook-tops/badge/?version=latest)](https://l2-orderbook-tops.readthedocs.io/en/latest/)
 
 Extract TOPS (top N best bid & best ask prices and sizes) from L2 orderbook data. 
 
