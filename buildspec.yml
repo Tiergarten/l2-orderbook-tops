@@ -21,7 +21,7 @@ phases:
         --cov 
         --cov=dspt
         --cov-report=html:test-reports/coverage 
-        --cov-report=xml:test-reports/coverage/coverage.xml
+        --cov-report=xml:test-reports/coverage.xml
         --junitxml=test-reports/junit.xml 
         --log-file=test-reports/logs.txt 
         tests
@@ -32,7 +32,7 @@ phases:
 reports:
   coverage:
     files:
-      - "coverage/coverage.xml"
+      - 'coverage.xml' 
     base-directory: 'test-reports'
     discard-paths: yes
     file-format: 'COBERTURAXML'
