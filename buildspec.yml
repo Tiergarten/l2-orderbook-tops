@@ -32,8 +32,7 @@ phases:
 reports:
   coverage:
     files:
-      - 'coverage.xml' 
-    base-directory: 'test-reports'
+      - 'test-reports/coverage.xml' 
     discard-paths: yes
     file-format: 'COBERTURAXML'
   report:
