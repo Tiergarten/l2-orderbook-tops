@@ -6,9 +6,9 @@ phases:
       python: 3.8
   pre_build:
     commands:
-      - pip install --upgrade pip
-      - pip install -r requirements.txt
-      - pip install .
+      - pip3 install --upgrade pip
+      - pip3 install -r requirements.txt
+      - pip3 install .
       - rm -rf dspt
       - mkdir test-reports
   build:
