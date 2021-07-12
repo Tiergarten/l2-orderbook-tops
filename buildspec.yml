@@ -35,7 +35,7 @@ reports:
       - "coverage/coverage.xml"
     base-directory: 'test-reports'
     discard-paths: yes
-    file-format: 'JACOCOXML'
+    file-format: 'COBERTURAXML'
   report:
     files:
       - 'junit.xml'
