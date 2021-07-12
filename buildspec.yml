@@ -28,7 +28,7 @@ phases:
         tests
       - cd docs && make clean html && cd -
       - aws s3 sync ./docs/_build/html s3://superbucket42/package-docs/l2-orderbook-tops/latest
-      - python setup.py build
+      - python setup.py sdist
       - ls dist/
       - twine upload --repository codeartifact dist/*
   post_build:
