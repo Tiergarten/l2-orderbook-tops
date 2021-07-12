@@ -8,7 +8,7 @@ phases:
     commands:
       - pip install --upgrade pip
       - pip install -r requirements.txt
-	  - pip install .
+      - pip install .
       - rm -rf dspt
       - mkdir test-reports
   build:
