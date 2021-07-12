@@ -7,6 +7,7 @@ phases:
   pre_build:
     commands:
       - pip3 install --upgrade pip
+      - aws codeartifact login --tool twine --repository personal-repo --domain personal --domain-owner 972734064061
       - pip3 install -r requirements.txt
       - pip3 install .
       - rm -rf dspt
@@ -27,6 +28,7 @@ phases:
         tests
       - cd docs && make clean html && cd -
       - aws s3 sync ./docs/_build/html s3://superbucket42/package-docs/l2-orderbook-tops/latest
+      - twine upload --repository personal-repo l2-orderbook-tops
   post_build:
     commands:
       - echo Build completed on `date`
