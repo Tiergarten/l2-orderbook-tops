@@ -5,3 +5,4 @@ pytest
 pytest-html
 pytest-coverage
 sphinx
+twine
