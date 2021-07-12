@@ -13,7 +13,7 @@ phases:
       - mkdir test-reports
   build:
     commands:
-      - pytest 
+      - python -m pytest 
         --html=test-reports/report.html 
         --self-contained-html
         -s
