@@ -19,6 +19,7 @@ phases:
         -s
         -v
         --cov 
+	    --cov=dspt
         --cov-report=html:test-reports/coverage 
         --junitxml=test-reports/junit.xml 
         --log-file=test-reports/logs.txt 
