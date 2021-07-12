@@ -7,8 +7,8 @@ phases:
   pre_build:
     commands:
       - pip install --upgrade pip
-      - pip install .
       - pip install -r requirements.txt
+	  - pip install .
       - rm -rf dspt
       - mkdir test-reports
   build:
