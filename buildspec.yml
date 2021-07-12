@@ -30,11 +30,12 @@ phases:
       - echo Build completed on `date`
 
 reports:
-  coverage:
+  CoverageReports:
     files:
-      - 'test-reports/coverage.xml' 
+      - 'coverage.xml' 
     discard-paths: yes
     file-format: 'COBERTURAXML'
+    base-directory: 'test-reports'
   report:
     files:
       - 'junit.xml'
