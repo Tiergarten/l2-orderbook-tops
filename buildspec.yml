@@ -25,7 +25,7 @@ phases:
         --junitxml=test-reports/junit.xml 
         --log-file=test-reports/logs.txt 
         tests
-      - cd docs && make clean html
+      - cd docs && make clean html && cd -
       - aws s3 sync ./docs/_build/html s3://superbucket42/package-docs/l2-orderbook-tops/latest
       - aws s3 website /superbucket42/package-docs/l2-orderbook-tops/latest --index-document index.html
   post_build:
