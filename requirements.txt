@@ -3,3 +3,4 @@ pandas
 cython
 pytest
 pytest-html
+pytest-coverage
