@@ -18,7 +18,7 @@ phases:
         --self-contained-html
         -s
         -v
-        --cov=dspt 
+        --cov 
         --cov-report=html:test-reports/coverage 
         --junitxml=test-reports/junit.xml 
         --log-file=test-reports/logs.txt 
