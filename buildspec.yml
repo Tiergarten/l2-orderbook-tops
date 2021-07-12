@@ -32,9 +32,10 @@ phases:
 reports:
   coverage:
     files:
-      - "coverage/*"
+      - "coverage/coverage.xml"
     base-directory: 'test-reports'
     discard-paths: yes
+    file-format: 'JACOCOXML'
   report:
     files:
       - 'junit.xml'
