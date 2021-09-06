@@ -12,3 +12,7 @@ dist/
 *.egg-info/
 l2_orderbook_tops/py_price_level_book.cpp
 docs/_build
+test-reports
+docs/_build/*
+__pycache__/
+.coverage
