@@ -20,14 +20,14 @@ cdef int array_cmp(unsigned int *left, unsigned int *right, unsigned int size):
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def l2_walk(unsigned long long[:] _ts, unsigned int[:] _side, unsigned int[:] _price, unsigned int[:] _qty, 
-        unsigned int tops_n=8, unsigned int watch_dollar_dist_depth=0):
+        unsigned int tops_n=500, unsigned int watch_dollar_dist_depth=0):
 
-    cdef Book *book = new Book(tops_n)
+    cdef Book *book = new Book(500)
     cdef int row_sz = book.out_len()
 
     # TODO: For large orderbooks we won't use the full len in output as we're only interested in tops
     # Can I use a heuristic to allocate a fraction of the initial array and re-alloc if needed?
-    cdef Py_ssize_t T = len(_ts)
+    cdef Py_ssize_t T = len(_ts) / 2
 
     _out_tops = np.full((T,row_sz), 0, dtype=np.uint32)
     cdef unsigned int[:,::1] out_tops_view = _out_tops
@@ -38,8 +38,8 @@ def l2_walk(unsigned long long[:] _ts, unsigned int[:] _side, unsigned int[:] _p
     cdef unsigned int i, out_ix
 
     # TODO: This array size information needs to be set dynamically
-    cdef unsigned int ret[(8*2*2)+2]
-    cdef unsigned int prev_ret[(8*2*2)+2]
+    cdef unsigned int ret[(500*2*2)+2]
+    cdef unsigned int prev_ret[(500*2*2)+2]
 
     out_ix = 0
     i = 0

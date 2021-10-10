@@ -3,7 +3,7 @@ import pandas as pd
 import logging
 
 
-def get_tops(df, tops_len=8, watch_dollar_dist_depth=50):
+def get_tops(df, tops_len=500, watch_dollar_dist_depth=50):
     """
     Get tops from binance orderbook data and skip over the start-of-day snapshot data
 

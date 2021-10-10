@@ -20,10 +20,10 @@ def _set_types(df):
     return df
 
 
-def _get_binance_orderbook_snap_delta(input_dir, dt):
+def _get_binance_orderbook_snap_delta(input_dir, dt, symbol='BTCUSDT'):
     """Load Binance L2 orderbook snapshot and delta files"""
     
-    fn_template = os.path.join(input_dir, 'BTCUSDT_T_DEPTH_{}_depth_'.format(dt))
+    fn_template = os.path.join(input_dir, '{}_T_DEPTH_{}_depth_'.format(symbol, dt))
     snap_fn = fn_template + 'snap.csv'
     update_fn = fn_template + 'update.csv'
     
@@ -32,10 +32,10 @@ def _get_binance_orderbook_snap_delta(input_dir, dt):
     snap_df = pd.read_csv(snap_fn, usecols=needed_cols)
     delta_df = pd.read_csv(update_fn, usecols=needed_cols)
 
-    return snap_df[snap_df['symbol'] == 'BTCUSDT'], delta_df[delta_df['symbol'] == 'BTCUSDT']
+    return snap_df[snap_df['symbol'] == symbol], delta_df[delta_df['symbol'] == symbol]
 
 
-def get_binance_tops(input_dir, input_date, watch_dollar_dist_depth=25):
+def get_binance_tops(input_dir, input_date, symbol):
     """
     Helper to get TOPS from raw Binance order book data files
 
@@ -56,16 +56,45 @@ def get_binance_tops(input_dir, input_date, watch_dollar_dist_depth=25):
         Dataframe containing order book data parsed into TOPS view
 
     """
-    snap, delta = _get_binance_orderbook_snap_delta(input_dir, input_date)
-    df = pd.concat([snap, delta])
-    logging.info(f'got {df.shape[0]} input rows, snap: {snap.shape[0]}, deltas: {delta.shape[0]}')
+    snap, delta = _get_binance_orderbook_snap_delta(input_dir, input_date, symbol)
 
-    df = _set_types(df)
+    snap = _set_types(snap)
+    delta = _set_types(delta)
 
-    tops = l2_orderbook_tops.get_tops(df, watch_dollar_dist_depth=watch_dollar_dist_depth)
-    logging.info(f'got {tops.shape[0]} output rows')
+    snap_times = snap['timestamp'].drop_duplicates()
+    logging.info(f'Got {len(snap_times)} snapshots...')
 
-    print(tops.head())
-    
-    return tops.iloc[snap['timestamp'].drop_duplicates().shape[0]:]
+    output = []
+    for prev, curr in zip(snap_times, snap_times[1:]):
+        s = snap[
+            snap['timestamp'] == prev
+            ]
+
+        c = delta[
+            (delta['timestamp'] >= prev)
+            & (delta['timestamp'] < curr)
+            ]
+
+        snap_and_updates = pd.concat([s, c])
+        logging.info(f'Starting snap chunk starting {prev}')
+        tops = l2_orderbook_tops.get_tops(snap_and_updates)
+        output.append(tops)
+
+    out_concat = pd.concat(output)
+    logging.info(f'got {out_concat} output rows')
+
+    # TODO: These columns are useless without prices, remove it completely from C too
+    out_concat = out_concat.drop(columns=['a_total', 'b_total'])
+
+    out_concat['bid_quotes'] = [np.array(row) for row in out_concat[[c for c in out_concat.columns if c.startswith('b_')]].to_numpy()]
+    out_concat['bid_sizes'] = [np.array(row) for row in out_concat[[c for c in out_concat.columns if c.startswith('bq_')]].to_numpy()]
+
+    out_concat['ask_quotes'] = [np.array(row) for row in out_concat[[c for c in out_concat.columns if c.startswith('a_')]].to_numpy()]
+    out_concat['ask_sizes'] = [np.array(row) for row in out_concat[[c for c in out_concat.columns if c.startswith('aq_')]].to_numpy()]
+
+    drop_col_nms = [c for c in out_concat.columns if
+                    c.startswith('b_') or c.startswith('bq_') or c.startswith('a_') or c.startswith('aq_')]
+
+    out_concat = out_concat.drop(columns=drop_col_nms)
+    return out_concat
 
